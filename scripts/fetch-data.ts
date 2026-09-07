@@ -1,4 +1,6 @@
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 import { load } from 'cheerio'
 import type { DataMeta, HousingListing, JobListing, ListingDataFile } from '../src/models/listings'
 import { parseJobDetail, type JobApiItem } from '../src/parsers/jobsParser'
@@ -11,6 +13,26 @@ const outputDirectory = new URL('../public/data/', import.meta.url)
 const tempDirectory = new URL('../public/data-next/', import.meta.url)
 const fetchedAt = new Date().toISOString()
 const userAgent = 'Jobs-und-Wohnungen/1.0 (+https://leonrohrer.at/Jobs-und-wohnungen/; public-data-refresh)'
+const execFileAsync = promisify(execFile)
+
+async function fetchWithCurl(url: string): Promise<{ body: string; headers: Headers }> {
+  const { stdout } = await execFileAsync('curl', [
+    '--silent', '--show-error', '--location', '--connect-timeout', '30', '--max-time', '90',
+    '--dump-header', '-', '--user-agent', userAgent, '--header', 'Accept: text/html,application/json', url,
+  ], { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 })
+  const blocks = [...stdout.matchAll(/HTTP\/[^\r\n]+\r?\n(?:[^\r\n]+\r?\n)*\r?\n/g)]
+  const finalBlock = blocks.at(-1)
+  if (!finalBlock || finalBlock.index === undefined) throw new Error(`curl returned no HTTP headers for ${url}`)
+  const headerText = finalBlock[0]
+  const status = Number(headerText.match(/^HTTP\/\S+\s+(\d+)/)?.[1] ?? '0')
+  if (status >= 400 || status === 0) throw new Error(`${url} returned ${status || 'an invalid response'}`)
+  const headers = new Headers()
+  headerText.split(/\r?\n/).slice(1).forEach((line) => {
+    const separator = line.indexOf(':')
+    if (separator > 0) headers.append(line.slice(0, separator).trim(), line.slice(separator + 1).trim())
+  })
+  return { body: stdout.slice(finalBlock.index + headerText.length), headers }
+}
 
 async function fetchText(url: string, attempt = 1): Promise<{ body: string; headers: Headers }> {
   try {
@@ -21,11 +43,14 @@ async function fetchText(url: string, attempt = 1): Promise<{ body: string; head
     }
     return { body: await response.text(), headers: response.headers }
   } catch (error) {
-    if (attempt < 4 && !(error instanceof Error && error.message.includes('returned 404'))) {
+    const message = error instanceof Error ? error.message : ''
+    if (message.includes('returned 404')) throw error
+    if (attempt < 4 && /returned 5\d\d/.test(message)) {
       await new Promise((resolve) => setTimeout(resolve, attempt * 500))
       return fetchText(url, attempt + 1)
     }
-    throw error
+    console.warn(`Native fetch failed for ${url}; trying curl.`)
+    return fetchWithCurl(url)
   }
 }
 
@@ -99,8 +124,22 @@ async function fetchHousing(): Promise<HousingListing[]> {
   sets.forEach((set, index) => set.forEach((url) => typeByUrl.set(url, categories[index] ?? '')))
   const urls = [...typeByUrl.keys()]
   console.log(`Found ${urls.length} unique housing detail pages.`)
-  const listings = await mapConcurrent(urls, 3, async (url) => parseHousingDetail(url, (await fetchText(url)).body, fetchedAt, typeByUrl.get(url)))
+  let previous: HousingListing[] = []
+  try { previous = JSON.parse(await readFile(new URL('housing.json', outputDirectory), 'utf8')).listings as HousingListing[] } catch { /* first run */ }
+  const previousByUrl = new Map(previous.map((listing) => [listing.originalUrl, listing]))
+  let fallbacks = 0
+  const parsed = await mapConcurrent(urls, 3, async (url): Promise<HousingListing | undefined> => {
+    try {
+      return parseHousingDetail(url, (await fetchText(url)).body, fetchedAt, typeByUrl.get(url))
+    } catch {
+      fallbacks += 1
+      return previousByUrl.get(url)
+    }
+  })
+  if (fallbacks > Math.max(3, Math.ceil(urls.length * 0.1))) throw new Error(`Validation failed: ${fallbacks} housing detail pages were unreachable`)
+  const listings = parsed.filter((listing): listing is HousingListing => listing !== undefined)
   console.log(`Parsed ${listings.length} housing detail pages.`)
+  if (fallbacks) console.warn(`Reused ${fallbacks} previously validated housing records after detail timeouts.`)
   return listings
 }
 
