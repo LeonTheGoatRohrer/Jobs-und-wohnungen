@@ -18,7 +18,10 @@ test('Wohnungen: Suche und Auswahl funktionieren', async ({ page }) => {
   await page.getByRole('button', { name: 'Angebote suchen' }).click()
   await expect(page.getByRole('heading', { name: /Angebote? gefunden/ })).toBeVisible()
   await page.getByRole('checkbox', { name: 'Für PDF auswählen' }).first().check()
-  await expect(page.getByRole('button', { name: /Angebot ausgewählt/ })).toBeVisible()
+  await page.getByRole('button', { name: /Angebot ausgewählt/ }).click()
+  await expect(page.getByRole('heading', { name: 'Auswahl prüfen' })).toBeVisible()
+  await page.getByRole('button', { name: 'PDF-Vorschau öffnen' }).click()
+  await expect(page.getByRole('dialog', { name: /Leistbare_Wohnungen_Innsbruck_Umgebung/ })).toBeVisible({ timeout: 15_000 })
 })
 
 test('Auswahl bleibt nach Reload erhalten', async ({ page }) => {
