@@ -27,6 +27,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Aktuelle öffentliche ÖH-Daten abrufen und validieren
+        if: github.event_name != 'push'
         run: npm run fetch:data
       - run: npm test
       - run: npm run build
