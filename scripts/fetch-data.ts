@@ -168,7 +168,7 @@ async function main(): Promise<void> {
     mode === '--jobs-only' ? existingHousing() : fetchHousing(),
   ])
   validate(jobs, housing)
-  const meta: DataMeta = { fetchedAt, jobsCount: jobs.length, housingCount: housing.length, sources: { jobs: JOBS_API, housing: `${HOUSING_BASE}/` } }
+  const meta: DataMeta = { fetchedAt, updateIntervalHours: 6, jobsCount: jobs.length, housingCount: housing.length, sources: { jobs: JOBS_API, housing: `${HOUSING_BASE}/` } }
   const jobsFile: ListingDataFile<JobListing> = { fetchedAt, source: JOBS_API, listings: jobs }
   const housingFile: ListingDataFile<HousingListing> = { fetchedAt, source: `${HOUSING_BASE}/`, listings: housing }
   await rm(tempDirectory, { recursive: true, force: true })

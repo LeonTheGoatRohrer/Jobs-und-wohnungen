@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test'
 
 test('Jobs: suchen, auswählen und PDF vorbereiten', async ({ page }) => {
   await page.goto('./')
+  await expect(page.getByText('Webseite zuletzt veröffentlicht')).toBeVisible()
+  await expect(page.getByText('Alle 6 Stunden')).toBeVisible()
   await page.getByRole('button', { name: 'Angebote suchen' }).click()
   await expect(page.getByRole('heading', { name: /Angebote? gefunden/ })).toBeVisible()
   await page.getByRole('checkbox', { name: 'Für PDF auswählen' }).first().check()

@@ -4,6 +4,9 @@ import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
   base: '/Jobs-und-wohnungen/',
+  define: {
+    __BUILD_TIMESTAMP__: JSON.stringify(new Date().toISOString()),
+  },
   plugins: [vue()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },

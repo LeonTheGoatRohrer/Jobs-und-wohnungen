@@ -56,6 +56,7 @@ export type Listing = JobListing | HousingListing
 
 export interface DataMeta {
   fetchedAt: string
+  updateIntervalHours: number
   jobsCount: number
   housingCount: number
   sources: { jobs: string; housing: string }

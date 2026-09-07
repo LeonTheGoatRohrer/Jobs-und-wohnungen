@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import AppHeader from '@/components/common/AppHeader.vue'
+import PublicationStatus from '@/components/common/PublicationStatus.vue'
 import SearchPanel from '@/components/search/SearchPanel.vue'
 import ListingCard from '@/components/results/ListingCard.vue'
 import SelectionPanel from '@/components/selection/SelectionPanel.vue'
@@ -24,6 +25,7 @@ const edits = reactive<Record<string, ManualListingEdits>>(stored.edits)
 const generating = ref(false)
 const preview = ref<(PdfDocumentResult & { url: string })>()
 const selectionNotice = ref('')
+const buildTimestamp = __BUILD_TIMESTAMP__
 
 const filters = reactive<SearchFilters>({
   kind: 'jobs', region: 'innsbruck', query: '', employmentType: 'all', withoutTraining: false,
@@ -33,7 +35,7 @@ const filters = reactive<SearchFilters>({
 const results = computed(() => searched.value ? searchListings(allListings.value, filters) : [])
 const visibleResults = computed(() => results.value.slice(0, visibleCount.value))
 const sourceAgeHours = computed(() => meta.value ? (Date.now() - Date.parse(meta.value.fetchedAt)) / 3_600_000 : 0)
-const updatedLabel = computed(() => meta.value ? new Intl.DateTimeFormat('de-AT', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(meta.value.fetchedAt)) : 'nicht verfügbar')
+const updatedLabel = computed(() => meta.value ? new Intl.DateTimeFormat('de-AT', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Vienna' }).format(new Date(meta.value.fetchedAt)) : 'nicht verfügbar')
 
 onMounted(async () => {
   try {
@@ -85,6 +87,7 @@ function downloadPdf(): void {
   <main id="main-content">
     <template v-if="step === 'search'">
       <section class="intro"><div><p class="eyebrow">Ein Werkzeug für die Sozialberatung</p><h1>Aktuelle Angebote.<br><em>Klar zusammengestellt.</em></h1></div><p>ÖH-Inserate durchsuchen, geeignete Angebote auswählen und als professionelle PDF weitergeben.</p></section>
+      <PublicationStatus :published-at="buildTimestamp" :data-fetched-at="meta?.fetchedAt" :update-interval-hours="meta?.updateIntervalHours ?? 6" />
       <div v-if="sourceAgeHours > 24" class="warning" role="status"><strong>Daten möglicherweise veraltet.</strong> Der letzte erfolgreiche Abruf liegt mehr als 24 Stunden zurück.</div>
       <div v-if="error" class="error-state" role="alert"><strong>Datenquelle nicht erreichbar</strong><span>{{ error }}</span></div>
       <SearchPanel v-model="filters" :loading="loading" @search="runSearch" />

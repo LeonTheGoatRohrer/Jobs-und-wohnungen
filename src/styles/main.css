@@ -46,6 +46,17 @@ main { max-width: 1260px; margin: 0 auto; padding: 0 clamp(1.2rem, 4vw, 3.5rem) 
 .intro h1 em { color: var(--red); font-style: normal; font-weight: 400; }
 .intro > p { font-size: clamp(1rem, 1.5vw, 1.22rem); line-height: 1.55; margin: 0; color: #4d4d52; padding-bottom: .5rem; }
 
+.publication-status { display: grid; grid-template-columns: 1.15fr 1fr 1fr; background: var(--line); border: 1px solid var(--line); border-top: 0; gap: 1px; }
+.publication-status__item { min-width: 0; min-height: 132px; padding: 1.25rem 1.4rem; background: #fff; display: flex; flex-direction: column; justify-content: space-between; }
+.publication-status__item > span { color: var(--muted); font-size: .7rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.publication-status__item time { display: grid; gap: .2rem; }
+.publication-status__item strong { display: block; font-size: clamp(1.2rem, 2vw, 1.65rem); letter-spacing: -.025em; font-variant-numeric: tabular-nums; }
+.publication-status__item small { color: var(--muted); font-size: .76rem; line-height: 1.35; }
+.publication-status__item--primary { background: var(--red); color: #fff; }
+.publication-status__item--primary > span, .publication-status__item--primary small { color: #fff; }
+.publication-status__item--primary strong { font-size: clamp(1.65rem, 3vw, 2.35rem); letter-spacing: -.04em; }
+.publication-status__item--interval strong { color: var(--red); }
+
 .warning, .error-state { margin-top: 1.5rem; border-left: 5px solid #8a6300; padding: 1rem 1.2rem; background: #fff9e8; display: flex; gap: .5rem 1rem; flex-wrap: wrap; }
 .error-state { border-color: var(--red); background: #fff1f3; }
 
@@ -158,6 +169,8 @@ main { max-width: 1260px; margin: 0 auto; padding: 0 clamp(1.2rem, 4vw, 3.5rem) 
   .results-head, .section-heading { align-items: stretch; flex-direction: column; }
   .sort { width: 100%; }
   .site-footer { align-items: flex-start; flex-direction: column; }
+  .publication-status { grid-template-columns: 1fr 1fr; }
+  .publication-status__item--primary { grid-column: 1 / -1; }
 }
 
 @media (max-width: 560px) {
@@ -170,6 +183,8 @@ main { max-width: 1260px; margin: 0 auto; padding: 0 clamp(1.2rem, 4vw, 3.5rem) 
   main { padding-inline: 1rem; }
   .intro { padding: 2.2rem 0 2rem; }
   .intro h1 { font-size: 2.35rem; }
+  .publication-status { grid-template-columns: 1fr; }
+  .publication-status__item, .publication-status__item--primary { grid-column: auto; min-height: 112px; }
   .choice-grid.two, .field-grid { grid-template-columns: 1fr; }
   .field-grid .wide { grid-column: auto; }
   .choice-grid label { min-height: 94px; }
