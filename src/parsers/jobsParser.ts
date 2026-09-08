@@ -1,6 +1,6 @@
 import { load } from 'cheerio'
 import type { JobListing } from '@/models/listings'
-import { cleanText, linesFromText } from './shared'
+import { cleanText, extractContactDetails, linesFromText } from './shared'
 
 interface JobApiItem {
   id: number
@@ -8,7 +8,7 @@ interface JobApiItem {
   link: string
   title: { rendered: string }
   content: { rendered: string }
-  meta?: { _job_location?: string; _company_name?: string }
+  meta?: { _job_location?: string; _company_name?: string; _application?: string; _company_website?: string }
   _embedded?: { 'wp:term'?: Array<Array<{ name: string; taxonomy: string }>> }
 }
 
@@ -34,6 +34,16 @@ export function parseJobDetail(api: JobApiItem, detailHtml: string, fetchedAt: s
   const validUntil = typeof schema?.validThrough === 'string' ? schema.validThrough : undefined
   const salary = detailSalary || extractSalary(detailDescription)
   const startDate = detailStartDate || extractStartDate(detailDescription)
+  const application = api.meta?._application?.trim()
+  const applicationIsUrl = Boolean(application && /^https?:\/\//i.test(application))
+  const contact = extractContactDetails(detailDescription, {
+    emails: [
+      ...$('.job_application_email[href^="mailto:"]').toArray().map((element) => ($(element).attr('href') ?? '').replace(/^mailto:/i, '').split('?')[0]).filter((item): item is string => Boolean(item)),
+      ...(!applicationIsUrl && application ? [application] : []),
+    ],
+    websites: [api.meta?._company_website, $('.company a.website').first().attr('href')].filter((item): item is string => Boolean(item)),
+    applicationUrls: applicationIsUrl && application ? [application] : [],
+  })
 
   return {
     id: String(api.id), title: cleanText(api.title.rendered), originalUrl: api.link,
@@ -41,7 +51,7 @@ export function parseJobDetail(api: JobApiItem, detailHtml: string, fetchedAt: s
     ...(location ? { location } : {}), ...(detailDescription ? { description: detailDescription } : {}),
     ...(employer ? { employer } : {}), ...(employmentType ? { employmentType } : {}),
     ...(salary ? { salary } : {}), ...(startDate ? { startDate } : {}),
-    ...(workingHours ? { workingHours } : {}), tasks, requirements, categories,
+    ...(workingHours ? { workingHours } : {}), ...(contact ? { contact } : {}), tasks, requirements, categories,
   }
 }
 

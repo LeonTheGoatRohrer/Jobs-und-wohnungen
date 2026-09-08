@@ -12,7 +12,7 @@ describe('listing parsers', () => {
     const api: JobApiItem = {
       id: 101803, date: '2026-09-03T08:50:40', link: 'https://jobs.oehweb.at/job/example/',
       title: { rendered: 'Mitarbeiter:in Kassa &#8211; IKEA' }, content: { rendered: '<p>Beschreibung</p>' },
-      meta: { _job_location: 'Innsbruck', _company_name: 'IKEA Innsbruck' },
+      meta: { _job_location: 'Innsbruck', _company_name: 'IKEA Innsbruck', _application: 'https://jobs.example.at/bewerben', _company_website: 'https://www.ikea.com/at/de/' },
       _embedded: { 'wp:term': [[{ name: 'Verkauf', taxonomy: 'job_listing_category' }]] },
     }
     const result = parseJobDetail(api, fixture('job-detail.html'), '2026-09-07T12:00:00Z')
@@ -21,6 +21,10 @@ describe('listing parsers', () => {
     expect(result.salary).toContain('2.535')
     expect(result.validUntil).toContain('2026-09-17')
     expect(result.originalUrl).toBe(api.link)
+    expect(result.contact?.names).toContain('Maria Muster')
+    expect(result.contact?.emails).toContain('bewerbung@example.at')
+    expect(result.contact?.phones).toContain('+43 512 123456')
+    expect(result.contact?.applicationUrls).toContain('https://jobs.example.at/bewerben')
   })
 
   it('parses housing costs and missing fields as missing', () => {
@@ -31,6 +35,10 @@ describe('listing parsers', () => {
     expect(result.operatingCosts).toBe('inklusive')
     expect(result.electricityCosts).toBeUndefined()
     expect(result.housingType).toBe('garconniere')
+    expect(result.contact?.names).toContain('Max Mustermann')
+    expect(result.contact?.emails).toContain('wohnung@example.at')
+    expect(result.contact?.phones.join(' ')).toContain('664 1234567')
+    expect(result.images?.[0]?.sourceUrl).toContain('wohnung-835x467.jpg')
   })
 })
 

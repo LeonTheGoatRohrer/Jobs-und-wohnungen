@@ -26,7 +26,11 @@ defineEmits<{ back: []; remove: [Listing]; reset: []; preview: []; updateEdit: [
             <label class="field"><span>Betriebskosten</span><input :value="edits[listing.id]?.operatingCosts ?? listing.operatingCosts ?? ''" placeholder="nicht angegeben" @input="$emit('updateEdit', listing.id, 'operatingCosts', ($event.target as HTMLInputElement).value)" /></label>
             <label class="field"><span>Kaution</span><input :value="edits[listing.id]?.deposit ?? listing.deposit ?? ''" placeholder="nicht angegeben" @input="$emit('updateEdit', listing.id, 'deposit', ($event.target as HTMLInputElement).value)" /></label>
           </template>
+          <label class="field"><span>Ansprechperson</span><input :value="edits[listing.id]?.contactName ?? listing.contact?.names.join('; ') ?? ''" placeholder="nicht angegeben" @input="$emit('updateEdit', listing.id, 'contactName', ($event.target as HTMLInputElement).value)" /></label>
+          <label class="field"><span>E-Mail</span><input type="text" inputmode="email" :value="edits[listing.id]?.contactEmail ?? listing.contact?.emails.join('; ') ?? ''" placeholder="nicht angegeben" @input="$emit('updateEdit', listing.id, 'contactEmail', ($event.target as HTMLInputElement).value)" /></label>
+          <label class="field"><span>Telefon</span><input type="tel" :value="edits[listing.id]?.contactPhone ?? listing.contact?.phones.join('; ') ?? ''" placeholder="nicht angegeben" @input="$emit('updateEdit', listing.id, 'contactPhone', ($event.target as HTMLInputElement).value)" /></label>
         </div>
+        <p v-if="listing.source === 'oeh-housing'" class="pdf-inclusion-note">{{ listing.images?.length ? `${listing.images.length} ${listing.images.length === 1 ? 'Bild wird' : 'Bilder werden'} aus dem Originalinserat übernommen.` : 'Im Originalinserat ist kein verwendbares Galeriebild verfügbar.' }}</p>
         <a :href="listing.originalUrl" target="_blank" rel="noopener noreferrer">Originaldaten bei der ÖH vergleichen</a>
       </div>
     </article>

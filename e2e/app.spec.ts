@@ -11,6 +11,23 @@ test('Jobs: suchen, auswählen und PDF vorbereiten', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Auswahl prüfen' })).toBeVisible()
   await page.getByRole('button', { name: 'PDF-Vorschau öffnen' }).click()
   await expect(page.getByRole('dialog', { name: /Stellenangebote_Innsbruck/ })).toBeVisible({ timeout: 15_000 })
+  if ((page.viewportSize()?.width ?? 1000) <= 640) {
+    await expect(page.getByLabel(/PDF-Seite 1 von/)).toBeVisible({ timeout: 15_000 })
+    await expect(page.locator('.mobile-pdf-viewer')).toHaveJSProperty('scrollLeft', 0)
+    const sizing = await page.locator('.mobile-pdf-page').first().evaluate((canvas) => ({
+      canvas: canvas.getBoundingClientRect().width,
+      viewer: canvas.parentElement?.clientWidth ?? 0,
+      modal: document.querySelector<HTMLElement>('.pdf-modal')?.clientWidth ?? 0,
+      viewport: document.documentElement.clientWidth,
+      pageOverflow: document.documentElement.scrollWidth,
+    }))
+    expect(sizing.canvas).toBeLessThanOrEqual(sizing.viewer)
+    expect(sizing.viewer).toBeLessThanOrEqual(sizing.viewport)
+    expect(sizing.modal).toBe(sizing.viewport)
+    expect(sizing.pageOverflow).toBe(sizing.viewport)
+  } else {
+    await expect(page.getByTitle('Vorschau der ausgewählten Angebote')).toBeVisible()
+  }
 })
 
 test('Wohnungen: Suche und Auswahl funktionieren', async ({ page }) => {
@@ -24,6 +41,7 @@ test('Wohnungen: Suche und Auswahl funktionieren', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Auswahl prüfen' })).toBeVisible()
   await page.getByRole('button', { name: 'PDF-Vorschau öffnen' }).click()
   await expect(page.getByRole('dialog', { name: /Leistbare_Wohnungen_Innsbruck_Umgebung/ })).toBeVisible({ timeout: 15_000 })
+  if ((page.viewportSize()?.width ?? 1000) <= 640) await expect(page.getByLabel(/PDF-Seite 1 von/)).toBeVisible({ timeout: 15_000 })
 })
 
 test('Auswahl bleibt nach Reload erhalten', async ({ page }) => {

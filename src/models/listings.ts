@@ -8,6 +8,20 @@ export interface SuitabilityResult {
   reasons: string[]
 }
 
+export interface ContactDetails {
+  names: string[]
+  emails: string[]
+  phones: string[]
+  websites: string[]
+  applicationUrls: string[]
+}
+
+export interface ListingImage {
+  sourceUrl: string
+  path?: string
+  alt?: string
+}
+
 export interface ListingBase {
   id: string
   title: string
@@ -18,6 +32,7 @@ export interface ListingBase {
   validUntil?: string
   location?: string
   description?: string
+  contact?: ContactDetails
 }
 
 export interface JobListing extends ListingBase {
@@ -49,6 +64,7 @@ export interface HousingListing extends ListingBase {
   availableFrom?: string
   amenities: string[]
   conditions: string[]
+  images?: ListingImage[]
   suitability?: SuitabilityResult
 }
 

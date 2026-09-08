@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
+import { fileURLToPath } from 'node:url'
 import { load } from 'cheerio'
 import type { DataMeta, HousingListing, JobListing, ListingDataFile } from '../src/models/listings'
 import { parseJobDetail, type JobApiItem } from '../src/parsers/jobsParser'
@@ -143,6 +144,53 @@ async function fetchHousing(): Promise<HousingListing[]> {
   return listings
 }
 
+async function mirrorHousingImages(listings: HousingListing[]): Promise<void> {
+  const imageRoot = new URL('images/', tempDirectory)
+  let imageCount = 0
+  await mapConcurrent(listings, 4, async (listing) => {
+    const safeId = listing.id.replace(/[^a-z0-9-]/gi, '-').slice(0, 120)
+    const listingDirectory = new URL(`${safeId}/`, imageRoot)
+    await mkdir(listingDirectory, { recursive: true })
+    const mirrored = []
+    for (const [index, image] of (listing.images ?? []).slice(0, 2).entries()) {
+      try {
+        const source = new URL(image.sourceUrl)
+        if (source.hostname !== 'wohnen.oehweb.at' || !source.pathname.startsWith('/wp-content/uploads/')) continue
+        const extension = source.pathname.match(/\.(jpe?g|png|webp)$/i)?.[1]?.toLocaleLowerCase('en-US') ?? 'jpg'
+        const fileName = `${String(index + 1).padStart(2, '0')}.${extension}`
+        const target = new URL(fileName, listingDirectory)
+        await downloadImage(source.href, target)
+        mirrored.push({ ...image, path: `data/images/${safeId}/${fileName}` })
+        imageCount += 1
+      } catch (error) {
+        console.warn(`Could not mirror housing image for ${listing.originalUrl}: ${error instanceof Error ? error.message : 'unknown error'}`)
+      }
+    }
+    listing.images = mirrored
+  })
+  console.log(`Mirrored ${imageCount} housing images for same-origin PDF generation.`)
+}
+
+async function downloadImage(sourceUrl: string, target: URL): Promise<void> {
+  try {
+    const response = await fetch(sourceUrl, { headers: { 'User-Agent': userAgent, Accept: 'image/*' }, signal: AbortSignal.timeout(45_000) })
+    if (!response.ok) throw new Error(`${sourceUrl} returned ${response.status}`)
+    const contentType = response.headers.get('content-type') ?? ''
+    if (!contentType.startsWith('image/')) throw new Error(`${sourceUrl} is not an image`)
+    const bytes = new Uint8Array(await response.arrayBuffer())
+    if (bytes.length < 500 || bytes.length > 10 * 1024 * 1024) throw new Error(`${sourceUrl} has an invalid size`)
+    await writeFile(target, bytes)
+    return
+  } catch {
+    await execFileAsync('curl', [
+      '--fail', '--silent', '--show-error', '--location', '--connect-timeout', '30', '--max-time', '90',
+      '--user-agent', userAgent, '--header', 'Accept: image/*', '--output', fileURLToPath(target), sourceUrl,
+    ])
+    const bytes = await readFile(target)
+    if (bytes.length < 500 || bytes.length > 10 * 1024 * 1024) throw new Error(`${sourceUrl} has an invalid size`)
+  }
+}
+
 function validate(jobs: JobListing[], housing: HousingListing[]): void {
   if (jobs.length < 1) throw new Error(`Validation failed: only ${jobs.length} current jobs`)
   if (housing.length < 3) throw new Error(`Validation failed: only ${housing.length} housing listings`)
@@ -173,6 +221,7 @@ async function main(): Promise<void> {
   const housingFile: ListingDataFile<HousingListing> = { fetchedAt, source: `${HOUSING_BASE}/`, listings: housing }
   await rm(tempDirectory, { recursive: true, force: true })
   await mkdir(tempDirectory, { recursive: true })
+  await mirrorHousingImages(housing)
   await Promise.all([
     writeFile(new URL('jobs.json', tempDirectory), JSON.stringify(jobsFile, null, 2)),
     writeFile(new URL('housing.json', tempDirectory), JSON.stringify(housingFile, null, 2)),

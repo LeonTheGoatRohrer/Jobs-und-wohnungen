@@ -1,8 +1,8 @@
 {
-  "fetchedAt": "2026-09-07T19:48:47.119Z",
+  "fetchedAt": "2026-09-07T20:49:39.958Z",
   "updateIntervalHours": 6,
-  "jobsCount": 419,
-  "housingCount": 75,
+  "jobsCount": 418,
+  "housingCount": 74,
   "sources": {
     "jobs": "https://jobs.oehweb.at/wp-json/wp/v2/job-listings",
     "housing": "https://wohnen.oehweb.at/"

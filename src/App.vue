@@ -39,7 +39,14 @@ const updatedLabel = computed(() => meta.value ? new Intl.DateTimeFormat('de-AT'
 
 onMounted(async () => {
   try {
-    const bundle = await loadAllData(); allListings.value = bundle.listings; meta.value = bundle.meta
+    const bundle = await loadAllData()
+    allListings.value = bundle.listings
+    meta.value = bundle.meta
+    if (selected.value.length) {
+      const current = new Map(bundle.listings.map((listing) => [`${listing.source}-${listing.id}`, listing]))
+      selected.value = selected.value.map((listing) => current.get(`${listing.source}-${listing.id}`) ?? listing)
+      persistSelection()
+    }
   } catch { error.value = 'Die ÖH-Daten konnten derzeit nicht geladen werden.' }
   finally { loading.value = false }
 })

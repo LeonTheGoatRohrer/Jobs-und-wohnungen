@@ -1,6 +1,6 @@
 import { load } from 'cheerio'
 import type { HousingListing, HousingType } from '@/models/listings'
-import { cleanText, parseEuro } from './shared'
+import { cleanText, extractContactDetails, parseEuro } from './shared'
 
 function labeledValue(body: string, labels: string[]): string | undefined {
   for (const label of labels) {
@@ -51,12 +51,31 @@ export function parseHousingDetail(url: string, html: string, fetchedAt: string,
   const published = $('meta[property="article:published_time"]').attr('content') || $('time[datetime]').first().attr('datetime')
   const slug = new URL(url).pathname.split('/').filter(Boolean).pop() ?? url
   const amenities = $('.listing_detail .fa-check').parent().toArray().map((el) => cleanText($(el).text())).filter(Boolean)
+  const contactRoot = $('#kontakt-wrapper').first()
+  const contactName = cleanText(contactRoot.find('h4 a').first().text())
+  const contact = extractContactDetails(`${description}\n${cleanText(contactRoot.html())}`, {
+    names: contactName ? [contactName] : [],
+    emails: contactRoot.find('a[href^="mailto:"]').toArray().map((element) => ($(element).attr('href') ?? '').replace(/^mailto:/i, '').split('?')[0]).filter((item): item is string => Boolean(item)),
+    phones: contactRoot.find('a[href^="tel:"]').toArray().map((element) => decodeURIComponent(($(element).attr('href') ?? '').replace(/^tel:/i, '')).replace(/\+/g, ' ')),
+  })
+  const images = $('.prettygalery img.lightbox_trigger').toArray().map((element) => {
+    const sourceUrl = $(element).attr('data-original') || $(element).attr('data-src') || $(element).attr('src')
+    const alt = cleanText($(element).attr('alt'))
+    if (!sourceUrl) return undefined
+    try {
+      const normalized = new URL(sourceUrl, url)
+      if (normalized.hostname !== 'wohnen.oehweb.at' || !normalized.pathname.startsWith('/wp-content/uploads/')) return undefined
+      return { sourceUrl: normalized.href, ...(alt ? { alt } : {}) }
+    } catch { return undefined }
+  }).filter((image): image is NonNullable<typeof image> => image !== undefined)
+    .filter((image, index, all) => all.findIndex((candidate) => candidate.sourceUrl === image.sourceUrl) === index)
+    .slice(0, 2)
 
   const totalRent = parseEuro(priceText)
   return {
     id: slug, title: title || slug.replace(/-/g, ' '), originalUrl: url, source: 'oeh-housing', fetchedAt,
     ...(published ? { publishedAt: published } : {}), ...(location ? { location } : {}),
-    ...(description ? { description } : {}), housingType: inferType(title, categories, categoryHint),
+    ...(description ? { description } : {}), ...(contact ? { contact } : {}), housingType: inferType(title, categories, categoryHint),
     ...(sizeText ? { sizeM2: Number.parseFloat(sizeText.replace(',', '.')) } : {}),
     ...(roomText && Number.isFinite(Number.parseFloat(roomText.replace(',', '.'))) ? { rooms: Number.parseFloat(roomText.replace(',', '.')) } : {}),
     ...(totalRent !== undefined ? { totalRent } : {}),
@@ -66,7 +85,7 @@ export function parseHousingDetail(url: string, html: string, fetchedAt: string,
     ...optional('deposit', get('Kaution')),
     ...optional('oneTimeCosts', get('Ablöse', 'Einmalige Kosten')),
     ...optional('availableFrom', get('Verfügbar ab', 'Bezugsfrei ab', 'Verfügbarkeit')),
-    amenities,
+    amenities, images,
     conditions: [],
   }
 }

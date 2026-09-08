@@ -10,6 +10,7 @@ Produktions-URL: <https://leonrohrer.at/Jobs-und-wohnungen/>
 - kein Server, keine Datenbank, keine API-Schlüssel
 - `OehJobsProvider` und `OehHousingProvider` laden statische JSON-Dateien
 - GitHub Actions ruft öffentliche ÖH-Seiten alle sechs Stunden ab, validiert sie und veröffentlicht die Website
+- Kontaktdaten werden strukturiert aus den Inserat-Metadaten und -Texten übernommen; bis zu zwei echte Galeriebilder pro Wohnung werden für den PDF-Export lokal gespiegelt
 - Die Startseite zeigt den Zeitpunkt des letzten Builds, den letzten erfolgreichen Datenabruf und den Aktualisierungsrhythmus transparent an
 - Auswahl und manuelle PDF-Korrekturen bleiben ausschließlich im Browser (`localStorage`)
 - PDF-Erzeugung und QR-Codes laufen vollständig im Browser; die Bibliotheken werden erst bei Bedarf geladen
@@ -42,7 +43,7 @@ Die Unit- und Component-Tests decken Parser-Fixtures, Regionen, Suchfilter, Rank
 
 ## PDF-System
 
-Die PDFs enthalten echten Text, klickbare Original-Links, QR-Codes mit exakt derselben `originalUrl`, Erstellungsdatum, Aktualitätshinweis und Seitenzahlen. Jobs und Wohnungen können nicht gemischt exportiert werden. Fehlende Felder erscheinen als „nicht angegeben“.
+Die PDFs enthalten ein strukturiertes Angebotsraster, Kontaktdaten mit anklickbaren E-Mail-, Telefon-, Bewerbungs- und Webseitenlinks, echte Wohnungsbilder, Original-Links, QR-Codes mit exakt derselben `originalUrl`, Erstellungsdatum, Aktualitätshinweis und Seitenzahlen. Auf iPhones und schmalen Displays rendert PDF.js alle Seiten automatisch auf Bildschirmbreite untereinander; horizontaler Dokument-Scroll ist nicht nötig. Jobs und Wohnungen können nicht gemischt exportiert werden. Fehlende Felder erscheinen als „nicht angegeben“.
 
 ## GitHub Pages
 
