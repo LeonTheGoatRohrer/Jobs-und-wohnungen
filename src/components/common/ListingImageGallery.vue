@@ -49,4 +49,16 @@ function markFailed(image: ListingImage): void {
       {{ displayedImages.length }} {{ displayedImages.length === 1 ? 'Bild' : 'Bilder' }} aus dem Originalinserat
     </figcaption>
   </figure>
+  <div
+    v-else
+    class="listing-gallery listing-gallery--empty"
+    :class="{ 'listing-gallery--compact': compact }"
+    role="status"
+  >
+    <strong class="listing-gallery__zero" aria-hidden="true">0</strong>
+    <div class="listing-gallery__empty-copy">
+      <strong>Keine Bilder verfügbar</strong>
+      <span>Im Originalinserat wurden keine verwendbaren Wohnungsbilder gefunden.</span>
+    </div>
+  </div>
 </template>

@@ -40,4 +40,9 @@ describe('search and result components', () => {
     expect(image.getAttribute('src')).toContain('/data/images/h1/01.jpg')
     expect(view.getByText('1 Bild aus dem Originalinserat')).toBeTruthy()
   })
+  it('clearly identifies housing listings without images', () => {
+    const view = render(ListingCard, { props: { listing: { ...housing, images: [] }, selected: false }, global: { stubs: { FontAwesomeIcon: true } } })
+    expect(view.getByText('Keine Bilder verfügbar')).toBeTruthy()
+    expect(view.getByText('Im Originalinserat wurden keine verwendbaren Wohnungsbilder gefunden.')).toBeTruthy()
+  })
 })

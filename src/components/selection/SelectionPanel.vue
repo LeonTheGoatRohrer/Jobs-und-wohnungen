@@ -16,8 +16,8 @@ defineEmits<{ back: []; remove: [Listing]; reset: []; preview: []; updateEdit: [
       <div class="edit-content">
         <div class="edit-title"><div><span>{{ listing.source === 'oeh-jobs' ? 'Job' : 'Wohnung' }}</span><h2>{{ listing.title }}</h2></div><button type="button" @click="$emit('remove', listing)">Entfernen</button></div>
         <ListingImageGallery
-          v-if="listing.source === 'oeh-housing' && listing.images?.length"
-          :images="listing.images"
+          v-if="listing.source === 'oeh-housing'"
+          :images="listing.images ?? []"
           :title="listing.title"
           compact
           :show-caption="false"
@@ -38,7 +38,7 @@ defineEmits<{ back: []; remove: [Listing]; reset: []; preview: []; updateEdit: [
           <label class="field"><span>E-Mail</span><input type="text" inputmode="email" :value="edits[listing.id]?.contactEmail ?? listing.contact?.emails.join('; ') ?? ''" placeholder="nicht angegeben" @input="$emit('updateEdit', listing.id, 'contactEmail', ($event.target as HTMLInputElement).value)" /></label>
           <label class="field"><span>Telefon</span><input type="tel" :value="edits[listing.id]?.contactPhone ?? listing.contact?.phones.join('; ') ?? ''" placeholder="nicht angegeben" @input="$emit('updateEdit', listing.id, 'contactPhone', ($event.target as HTMLInputElement).value)" /></label>
         </div>
-        <p v-if="listing.source === 'oeh-housing'" class="pdf-inclusion-note">{{ listing.images?.length ? `${listing.images.length} ${listing.images.length === 1 ? 'Bild wird' : 'Bilder werden'} aus dem Originalinserat übernommen.` : 'Im Originalinserat ist kein verwendbares Galeriebild verfügbar.' }}</p>
+        <p v-if="listing.source === 'oeh-housing' && listing.images?.length" class="pdf-inclusion-note">{{ listing.images.length }} {{ listing.images.length === 1 ? 'Bild wird' : 'Bilder werden' }} aus dem Originalinserat übernommen.</p>
         <a :href="listing.originalUrl" target="_blank" rel="noopener noreferrer">Originaldaten bei der ÖH vergleichen</a>
       </div>
     </article>

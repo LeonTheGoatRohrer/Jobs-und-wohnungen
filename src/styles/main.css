@@ -115,6 +115,12 @@ main { max-width: 1260px; margin: 0 auto; padding: 0 clamp(1.2rem, 4vw, 3.5rem) 
 .listing-gallery figcaption { padding: .55rem 1.4rem; color: var(--red); background: #fff; font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .listing-gallery--compact { margin: 0 0 1.2rem; }
 .listing-gallery--compact .listing-gallery__grid { height: clamp(150px, 22vw, 230px); }
+.listing-gallery--empty { display: grid; grid-template-columns: 76px minmax(0, 1fr); min-height: 126px; color: #fff; background: var(--ink); }
+.listing-gallery__zero { display: grid; place-items: center; color: #fff; background: var(--red); font-size: 2.8rem; font-variant-numeric: tabular-nums; }
+.listing-gallery__empty-copy { display: flex; flex-direction: column; justify-content: center; gap: .35rem; padding: 1rem 1.2rem; }
+.listing-gallery__empty-copy strong { font-size: 1.12rem; }
+.listing-gallery__empty-copy span { color: #d6d6d6; font-size: .8rem; line-height: 1.4; }
+.listing-gallery--compact.listing-gallery--empty { min-height: 108px; }
 .listing-card h3 { margin: 1.3rem 0 .35rem; font-size: clamp(1.25rem, 2vw, 1.65rem); line-height: 1.15; letter-spacing: -.025em; }
 .subline { margin: 0; color: var(--muted); font-weight: 600; }
 .location { display: flex; gap: .45rem; align-items: center; margin: 1.15rem 0; color: #444; }

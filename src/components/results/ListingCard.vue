@@ -18,8 +18,8 @@ const formatRent = (rent: number | undefined): string => rent === undefined ? 'n
       <span class="source-label">ÖH {{ listing.source === 'oeh-jobs' ? 'Jobbörse' : 'Wohnungsbörse' }}</span>
     </header>
     <ListingImageGallery
-      v-if="listing.source === 'oeh-housing' && listing.images?.length"
-      :images="listing.images"
+      v-if="listing.source === 'oeh-housing'"
+      :images="listing.images ?? []"
       :title="listing.title"
     />
     <h3>{{ listing.title }}</h3>

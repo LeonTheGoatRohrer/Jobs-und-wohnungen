@@ -47,6 +47,16 @@ test('Wohnungen: Suche und Auswahl funktionieren', async ({ page }) => {
   if ((page.viewportSize()?.width ?? 1000) <= 640) await expect(page.getByLabel(/PDF-Seite 1 von/)).toBeVisible({ timeout: 15_000 })
 })
 
+test('Wohnungen ohne Bilder werden eindeutig gekennzeichnet', async ({ page }) => {
+  await page.goto('./')
+  await page.getByText('Wohnungen', { exact: true }).click()
+  await page.getByText('Innsbruck + Umgebung', { exact: true }).click()
+  await page.getByLabel('Suchbegriff').fill('Wohnung in Wilten')
+  await page.getByRole('button', { name: 'Angebote suchen' }).click()
+  const card = page.locator('.listing-card').filter({ has: page.getByRole('heading', { name: 'Wohnung in Wilten', exact: true }) })
+  await expect(card.getByText('Keine Bilder verfügbar')).toBeVisible()
+})
+
 test('Auswahl bleibt nach Reload erhalten', async ({ page }) => {
   await page.goto('./')
   await page.getByRole('button', { name: 'Angebote suchen' }).click()
