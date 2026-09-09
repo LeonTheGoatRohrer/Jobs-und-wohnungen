@@ -10,7 +10,7 @@ Produktions-URL: <https://leonrohrer.at/Jobs-und-wohnungen/>
 - kein Server, keine Datenbank, keine API-Schlüssel
 - `OehJobsProvider` und `OehHousingProvider` laden statische JSON-Dateien
 - GitHub Actions ruft öffentliche ÖH-Seiten alle sechs Stunden ab, validiert sie und veröffentlicht die Website
-- Kontaktdaten werden strukturiert aus den Inserat-Metadaten und -Texten übernommen; bis zu zwei echte Galeriebilder pro Wohnung werden für den PDF-Export lokal gespiegelt
+- Kontaktdaten werden strukturiert aus den Inserat-Metadaten und -Texten übernommen; bis zu zwei echte Galeriebilder pro Wohnung werden lokal gespiegelt und in Ergebnis, Auswahl sowie PDF angezeigt
 - Die Startseite zeigt den Zeitpunkt des letzten Builds, den letzten erfolgreichen Datenabruf und den Aktualisierungsrhythmus transparent an
 - Auswahl und manuelle PDF-Korrekturen bleiben ausschließlich im Browser (`localStorage`)
 - PDF-Erzeugung und QR-Codes laufen vollständig im Browser; die Bibliotheken werden erst bei Bedarf geladen

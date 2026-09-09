@@ -2,6 +2,7 @@
 import { faArrowUpRightFromSquare, faCheck, faLocationDot } from '@fortawesome/free-solid-svg-icons'
 import type { Listing } from '@/models/listings'
 import { housingTypeLabel } from '@/services/pdfService'
+import ListingImageGallery from '@/components/common/ListingImageGallery.vue'
 
 const props = defineProps<{ listing: Listing; selected: boolean }>()
 defineEmits<{ toggle: [listing: Listing] }>()
@@ -16,6 +17,11 @@ const formatRent = (rent: number | undefined): string => rent === undefined ? 'n
       <span class="rating"><i aria-hidden="true"></i>{{ levelLabel[listing.suitability?.level ?? 'limited'] }}</span>
       <span class="source-label">ÖH {{ listing.source === 'oeh-jobs' ? 'Jobbörse' : 'Wohnungsbörse' }}</span>
     </header>
+    <ListingImageGallery
+      v-if="listing.source === 'oeh-housing' && listing.images?.length"
+      :images="listing.images"
+      :title="listing.title"
+    />
     <h3>{{ listing.title }}</h3>
     <p v-if="listing.source === 'oeh-jobs'" class="subline">{{ listing.employer || 'Arbeitgeber nicht angegeben' }}</p>
     <p class="location"><FontAwesomeIcon :icon="faLocationDot" /> {{ listing.location || 'Ort nicht angegeben' }}</p>

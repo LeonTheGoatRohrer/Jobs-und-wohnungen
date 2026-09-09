@@ -108,6 +108,13 @@ main { max-width: 1260px; margin: 0 auto; padding: 0 clamp(1.2rem, 4vw, 3.5rem) 
 .suitable .rating { color: var(--yellow); }
 .limited .rating { color: var(--limited); }
 .source-label { font-size: .72rem; color: var(--muted); }
+.listing-gallery { margin: 1.2rem -1.4rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--soft); }
+.listing-gallery__grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 2px; height: clamp(150px, 18vw, 210px); background: #fff; overflow: hidden; }
+.listing-gallery--single .listing-gallery__grid { grid-template-columns: 1fr; }
+.listing-gallery img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.listing-gallery figcaption { padding: .55rem 1.4rem; color: var(--red); background: #fff; font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.listing-gallery--compact { margin: 0 0 1.2rem; }
+.listing-gallery--compact .listing-gallery__grid { height: clamp(150px, 22vw, 230px); }
 .listing-card h3 { margin: 1.3rem 0 .35rem; font-size: clamp(1.25rem, 2vw, 1.65rem); line-height: 1.15; letter-spacing: -.025em; }
 .subline { margin: 0; color: var(--muted); font-weight: 600; }
 .location { display: flex; gap: .45rem; align-items: center; margin: 1.15rem 0; color: #444; }
@@ -196,6 +203,10 @@ main { max-width: 1260px; margin: 0 auto; padding: 0 clamp(1.2rem, 4vw, 3.5rem) 
   .choice-grid label { min-height: 94px; }
   .search-panel fieldset { padding: 1.35rem; }
   .search-button { width: calc(100% - 2.7rem); min-width: 0; margin: 1.35rem; }
+  .listing-card { padding: 1.1rem; }
+  .listing-card .listing-gallery { margin-inline: -1.1rem; }
+  .listing-gallery__grid { height: 170px; }
+  .listing-gallery figcaption { padding-inline: 1.1rem; }
   .card-actions { flex-direction: column; }
   .card-actions details { max-width: 100%; }
   .edit-card { grid-template-columns: 1fr; }

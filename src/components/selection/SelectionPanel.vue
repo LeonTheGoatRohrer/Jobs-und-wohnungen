@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Listing, ManualListingEdits } from '@/models/listings'
+import ListingImageGallery from '@/components/common/ListingImageGallery.vue'
 
 defineProps<{ listings: Listing[]; edits: Record<string, ManualListingEdits>; generating: boolean }>()
 defineEmits<{ back: []; remove: [Listing]; reset: []; preview: []; updateEdit: [string, string, string] }>()
@@ -14,6 +15,13 @@ defineEmits<{ back: []; remove: [Listing]; reset: []; preview: []; updateEdit: [
       <div class="edit-number">{{ String(index + 1).padStart(2, '0') }}</div>
       <div class="edit-content">
         <div class="edit-title"><div><span>{{ listing.source === 'oeh-jobs' ? 'Job' : 'Wohnung' }}</span><h2>{{ listing.title }}</h2></div><button type="button" @click="$emit('remove', listing)">Entfernen</button></div>
+        <ListingImageGallery
+          v-if="listing.source === 'oeh-housing' && listing.images?.length"
+          :images="listing.images"
+          :title="listing.title"
+          compact
+          :show-caption="false"
+        />
         <div class="field-grid compact">
           <label class="field wide"><span>Titel</span><input :value="edits[listing.id]?.title ?? listing.title" @input="$emit('updateEdit', listing.id, 'title', ($event.target as HTMLInputElement).value)" /></label>
           <label class="field"><span>Ort</span><input :value="edits[listing.id]?.location ?? listing.location ?? ''" placeholder="nicht angegeben" @input="$emit('updateEdit', listing.id, 'location', ($event.target as HTMLInputElement).value)" /></label>
